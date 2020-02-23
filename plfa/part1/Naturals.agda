@@ -147,21 +147,10 @@ data Bin : Set where
   _O : Bin → Bin
   _I : Bin → Bin
 
--- carry data type
-data Carry : Set where
-  No : Carry
-  Yes : Carry
-
--- helper func
-carryinc : Carry → Bin → Bin
-carryinc No ⟨⟩ = ⟨⟩
-carryinc Yes ⟨⟩ = ⟨⟩ I
-carryinc No bin = bin
-carryinc Yes (bin O) = (carryinc No bin) I
-carryinc Yes (bin I) = (carryinc Yes bin) O
-
 inc : Bin → Bin
-inc = carryinc Yes
+inc ⟨⟩ = ⟨⟩ I
+inc (b O) = b I
+inc (b I) = (inc b) O
 
 -- example works
 
