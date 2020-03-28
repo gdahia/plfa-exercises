@@ -376,7 +376,7 @@ to-suc-n-2-O (suc (suc n)) z<s =
   ≡⟨⟩
     (to (suc (suc n))) O
   ∎
-    
+
 
 to-from-can≡id : ∀ {bin : Bin}
   → Can bin
