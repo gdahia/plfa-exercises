@@ -391,3 +391,14 @@ map-++-distribute f (x ∷ xs) ys =
   ≡⟨⟩
     map f (x ∷ xs) ++ map f ys
   ∎
+
+-- Exercise map-Tree (practice)
+
+data Tree (A B : Set) : Set where
+  leaf : A → Tree A B
+  node : Tree A B → B → Tree A B → Tree A B
+
+map-Tree : ∀ {A B C D : Set} → (A → C) → (B → D) → Tree A B → Tree C D
+map-Tree f g (leaf x) = leaf (f x)
+map-Tree f g (node left-child y right-child) =
+  node (map-Tree f g left-child) (g y) (map-Tree f g right-child)
