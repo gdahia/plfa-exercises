@@ -502,3 +502,10 @@ map-is-foldr-app f (x ∷ xs) =
 
 map-is-foldr : ∀ {A B : Set} → (f : A → B) → map f ≡ foldr (λ x xs → f x ∷ xs) []
 map-is-foldr f = extensionality (map-is-foldr-app f)
+
+-- Exercise fold-Tree (practice)
+
+fold-Tree : ∀ {A B C : Set} → (A → C) → (C → B → C → C) → Tree A B → C
+fold-Tree leaf-func _ (leaf x) = leaf-func x
+fold-Tree leaf-func node-func (node left-child y right-child) =
+  node-func (fold-Tree leaf-func node-func left-child) y (fold-Tree leaf-func node-func right-child)
