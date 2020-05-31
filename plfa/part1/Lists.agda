@@ -483,3 +483,22 @@ foldr-∷ (x ∷ xs) =
 
 ++-foldr-∷ : ∀ {A : Set} → (xs ys : List A) → xs ++ ys ≡ foldr _∷_ ys xs
 ++-foldr-∷ xs ys rewrite sym (foldr-∷ (xs ++ ys)) | foldr-++ _∷_ [] xs ys | foldr-∷ ys = refl
+
+-- Exercise map-is-foldr (practice)
+
+map-is-foldr-app : ∀ {A B : Set}
+  → (f : A → B) → (xs : List A) → map f xs ≡ foldr (λ x xs → f x ∷ xs) [] xs
+map-is-foldr-app f [] = refl
+map-is-foldr-app f (x ∷ xs) =
+  begin
+    map f (x ∷ xs)
+  ≡⟨⟩
+    (f x) ∷ (map f xs)
+  ≡⟨ cong ((f x) ∷_) (map-is-foldr-app f xs) ⟩
+    (f x) ∷ (foldr (λ x xs → f x ∷ xs) [] xs)
+  ≡⟨⟩
+    foldr (λ x xs → f x ∷ xs) [] (x ∷ xs)
+  ∎
+
+map-is-foldr : ∀ {A B : Set} → (f : A → B) → map f ≡ foldr (λ x xs → f x ∷ xs) []
+map-is-foldr f = extensionality (map-is-foldr-app f)
