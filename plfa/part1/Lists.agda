@@ -445,3 +445,25 @@ product = foldr _*_ 1
 
 _ : product [ 1 , 2 , 3 , 4 ] ≡ 24
 _ = refl
+
+-- Exercise foldr-++ (recommended)
+
+foldr-++ : ∀ {A B : Set}
+  → (_⊗_ : A → B → B)
+  → (e : B)
+  → (xs ys : List A)
+    ------------------------------------------------------
+  → foldr _⊗_ e (xs ++ ys) ≡ foldr _⊗_ (foldr _⊗_ e ys) xs
+foldr-++ _⊗_ e [] ys = refl
+foldr-++ _⊗_ e (x ∷ xs) ys =
+  begin
+    foldr _⊗_ e ((x ∷ xs) ++ ys)
+  ≡⟨⟩
+    foldr _⊗_ e (x ∷ (xs ++ ys))
+  ≡⟨⟩
+    x ⊗ foldr _⊗_ e (xs ++ ys)
+  ≡⟨ cong (x ⊗_) (foldr-++ _⊗_ e xs ys) ⟩
+    x ⊗ foldr _⊗_ (foldr _⊗_ e ys) xs
+  ≡⟨⟩
+    foldr _⊗_ (foldr _⊗_ e ys) (x ∷ xs)
+  ∎
