@@ -220,3 +220,22 @@ reverse-++-distrib (x ∷ xs) ys =
   ≡⟨⟩
     reverse ys ++ (reverse (x ∷ xs))
   ∎
+
+-- Exercise reverse-involutive (recommended)
+
+reverse-involutive : ∀ {A : Set} (xs : List A) → reverse (reverse xs) ≡ xs
+reverse-involutive [] = refl
+reverse-involutive (x ∷ xs) =
+  begin
+    reverse (reverse (x ∷ xs))
+  ≡⟨⟩
+    reverse (reverse xs ++ [ x ])
+  ≡⟨ reverse-++-distrib (reverse xs) [ x ] ⟩
+    reverse [ x ] ++ (reverse (reverse xs))
+  ≡⟨⟩
+    [ x ] ++ (reverse (reverse xs))
+  ≡⟨ cong ([ x ] ++_) (reverse-involutive xs) ⟩
+    [ x ] ++ xs
+  ≡⟨⟩
+    x ∷ xs
+  ∎
