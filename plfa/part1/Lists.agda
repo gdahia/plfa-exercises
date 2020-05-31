@@ -11,6 +11,7 @@ open import Relation.Nullary using (¬_; Dec; yes; no)
 open import Data.Product using (_×_; ∃; ∃-syntax) renaming (_,_ to ⟨_,_⟩)
 open import Function using (_∘_)
 open import Level using (Level)
+open import plfa.part1.Connectives using (extensionality)
 open import plfa.part1.Isomorphism using (_≃_; _⇔_)
 
 -- Lists
@@ -239,3 +240,127 @@ reverse-involutive (x ∷ xs) =
   ≡⟨⟩
     x ∷ xs
   ∎
+
+-- Faster reverse
+
+shunt : ∀ {A : Set} → List A → List A → List A
+shunt []       ys  =  ys
+shunt (x ∷ xs) ys  =  shunt xs (x ∷ ys)
+
+shunt-reverse : ∀ {A : Set} (xs ys : List A)
+  → shunt xs ys ≡ reverse xs ++ ys
+shunt-reverse [] ys =
+  begin
+    shunt [] ys
+  ≡⟨⟩
+    ys
+  ≡⟨⟩
+    reverse [] ++ ys
+  ∎
+shunt-reverse (x ∷ xs) ys =
+  begin
+    shunt (x ∷ xs) ys
+  ≡⟨⟩
+    shunt xs (x ∷ ys)
+  ≡⟨ shunt-reverse xs (x ∷ ys) ⟩
+    reverse xs ++ (x ∷ ys)
+  ≡⟨⟩
+    reverse xs ++ ([ x ] ++ ys)
+  ≡⟨ sym (++-assoc (reverse xs) [ x ] ys) ⟩
+    (reverse xs ++ [ x ]) ++ ys
+  ≡⟨⟩
+    reverse (x ∷ xs) ++ ys
+  ∎
+
+reverse′ : ∀ {A : Set} → List A → List A
+reverse′ xs = shunt xs []
+
+reverses : ∀ {A : Set} (xs : List A)
+  → reverse′ xs ≡ reverse xs
+reverses xs =
+  begin
+    reverse′ xs
+  ≡⟨⟩
+    shunt xs []
+  ≡⟨ shunt-reverse xs [] ⟩
+    reverse xs ++ []
+  ≡⟨ ++-identityʳ (reverse xs) ⟩
+    reverse xs
+  ∎
+
+_ : reverse′ [ 0 , 1 , 2 ] ≡ [ 2 , 1 , 0 ]
+_ =
+  begin
+    reverse′ (0 ∷ 1 ∷ 2 ∷ [])
+  ≡⟨⟩
+    shunt (0 ∷ 1 ∷ 2 ∷ []) []
+  ≡⟨⟩
+    shunt (1 ∷ 2 ∷ []) (0 ∷ [])
+  ≡⟨⟩
+    shunt (2 ∷ []) (1 ∷ 0 ∷ [])
+  ≡⟨⟩
+    shunt [] (2 ∷ 1 ∷ 0 ∷ [])
+  ≡⟨⟩
+    2 ∷ 1 ∷ 0 ∷ []
+  ∎
+
+-- Map
+
+map : ∀ {A B : Set} → (A → B) → List A → List B
+map f []        =  []
+map f (x ∷ xs)  =  f x ∷ map f xs
+
+_ : map suc [ 0 , 1 , 2 ] ≡ [ 1 , 2 , 3 ]
+_ =
+  begin
+    map suc (0 ∷ 1 ∷ 2 ∷ [])
+  ≡⟨⟩
+    suc 0 ∷ map suc (1 ∷ 2 ∷ [])
+  ≡⟨⟩
+    suc 0 ∷ suc 1 ∷ map suc (2 ∷ [])
+  ≡⟨⟩
+    suc 0 ∷ suc 1 ∷ suc 2 ∷ map suc []
+  ≡⟨⟩
+    suc 0 ∷ suc 1 ∷ suc 2 ∷ []
+  ≡⟨⟩
+    1 ∷ 2 ∷ 3 ∷ []
+  ∎
+
+sucs : List ℕ → List ℕ
+sucs = map suc
+
+_ : sucs [ 0 , 1 , 2 ] ≡ [ 1 , 2 , 3 ]
+_ =
+  begin
+    sucs [ 0 , 1 , 2 ]
+  ≡⟨⟩
+    map suc [ 0 , 1 , 2 ]
+  ≡⟨⟩
+    [ 1 , 2 , 3 ]
+  ∎
+
+-- Exercise map-compose (practice)
+
+map-compose-app : ∀ {A B C : Set}
+  → (f : A → B) → (g : B → C) → (xs : List A) → map (g ∘ f) xs ≡ (map g ∘ map f) xs
+map-compose-app f g [] = refl
+map-compose-app f g (x ∷ xs) =
+  begin
+    map (g ∘ f) (x ∷ xs)
+  ≡⟨⟩
+    ((g ∘ f) x) ∷ (map (g ∘ f) xs)
+  ≡⟨ cong (((g ∘ f) x) ∷_) (map-compose-app f g xs) ⟩
+    ((g ∘ f) x) ∷ (((map g) ∘ (map f)) xs)
+  ≡⟨⟩
+    (g (f x)) ∷ (((map g) ∘ (map f)) xs)
+  ≡⟨⟩
+    map g ((f x) ∷ (map f xs))
+  ≡⟨⟩
+    map g (map f (x ∷ xs))
+  ≡⟨⟩
+    (map g ∘ map f) (x ∷ xs)
+  ∎
+
+map-compose : ∀ {A B C : Set}
+  → (f : A → B) → (g : B → C) → map (g ∘ f) ≡ map g ∘ map f
+map-compose f g = extensionality (map-compose-app f g)
