@@ -467,3 +467,19 @@ foldr-++ _⊗_ e (x ∷ xs) ys =
   ≡⟨⟩
     foldr _⊗_ (foldr _⊗_ e ys) (x ∷ xs)
   ∎
+
+-- Exercise foldr-∷ (practice)
+
+foldr-∷ : ∀ {A : Set} → (xs : List A) → foldr _∷_ [] xs ≡ xs
+foldr-∷ [] = refl
+foldr-∷ (x ∷ xs) =
+  begin
+    foldr _∷_ [] (x ∷ xs)
+  ≡⟨⟩
+    x ∷ foldr _∷_ [] xs
+  ≡⟨ cong (x ∷_) (foldr-∷ xs) ⟩
+    x ∷ xs
+  ∎
+
+++-foldr-∷ : ∀ {A : Set} → (xs ys : List A) → xs ++ ys ≡ foldr _∷_ ys xs
+++-foldr-∷ xs ys rewrite sym (foldr-∷ (xs ++ ys)) | foldr-++ _∷_ [] xs ys | foldr-∷ ys = refl
