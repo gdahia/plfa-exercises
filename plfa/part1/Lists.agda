@@ -402,3 +402,46 @@ map-Tree : ∀ {A B C D : Set} → (A → C) → (B → D) → Tree A B → Tree
 map-Tree f g (leaf x) = leaf (f x)
 map-Tree f g (node left-child y right-child) =
   node (map-Tree f g left-child) (g y) (map-Tree f g right-child)
+
+-- Fold
+
+foldr : ∀ {A B : Set} → (A → B → B) → B → List A → B
+foldr _⊗_ e []        =  e
+foldr _⊗_ e (x ∷ xs)  =  x ⊗ foldr _⊗_ e xs
+
+_ : foldr _+_ 0 [ 1 , 2 , 3 , 4 ] ≡ 10
+_ =
+  begin
+    foldr _+_ 0 (1 ∷ 2 ∷ 3 ∷ 4 ∷ [])
+  ≡⟨⟩
+    1 + foldr _+_ 0 (2 ∷ 3 ∷ 4 ∷ [])
+  ≡⟨⟩
+    1 + (2 + foldr _+_ 0 (3 ∷ 4 ∷ []))
+  ≡⟨⟩
+    1 + (2 + (3 + foldr _+_ 0 (4 ∷ [])))
+  ≡⟨⟩
+    1 + (2 + (3 + (4 + foldr _+_ 0 [])))
+  ≡⟨⟩
+    1 + (2 + (3 + (4 + 0)))
+  ∎
+
+sum : List ℕ → ℕ
+sum = foldr _+_ 0
+
+_ : sum [ 1 , 2 , 3 , 4 ] ≡ 10
+_ =
+  begin
+    sum [ 1 , 2 , 3 , 4 ]
+  ≡⟨⟩
+    foldr _+_ 0 [ 1 , 2 , 3 , 4 ]
+  ≡⟨⟩
+    10
+  ∎
+
+-- Exercise product (recommended)
+
+product : List ℕ → ℕ
+product = foldr _*_ 1
+
+_ : product [ 1 , 2 , 3 , 4 ] ≡ 24
+_ = refl
