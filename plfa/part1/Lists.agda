@@ -364,3 +364,30 @@ map-compose-app f g (x ∷ xs) =
 map-compose : ∀ {A B C : Set}
   → (f : A → B) → (g : B → C) → map (g ∘ f) ≡ map g ∘ map f
 map-compose f g = extensionality (map-compose-app f g)
+
+-- Exercise map-++-distribute (practice)
+
+map-++-distribute : ∀ {A B : Set}
+  → (f : A → B) → (xs ys : List A) → map f (xs ++ ys) ≡ map f xs ++ map f ys
+map-++-distribute f [] ys =
+  begin
+    map f ([] ++ ys)
+  ≡⟨⟩
+    map f ys
+  ≡⟨⟩
+    map f [] ++ map f ys
+  ∎
+map-++-distribute f (x ∷ xs) ys =
+  begin
+    map f ((x ∷ xs) ++ ys)
+  ≡⟨⟩
+    map f (x ∷ (xs ++ ys))
+  ≡⟨⟩
+    (f x) ∷ (map f (xs ++ ys))
+  ≡⟨ cong ((f x) ∷_) (map-++-distribute f xs ys) ⟩
+    (f x) ∷ (map f xs ++ map f ys)
+  ≡⟨⟩
+    ((f x) ∷ (map f xs)) ++ map f ys
+  ≡⟨⟩
+    map f (x ∷ xs) ++ map f ys
+  ∎
