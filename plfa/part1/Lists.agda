@@ -509,3 +509,17 @@ fold-Tree : ∀ {A B C : Set} → (A → C) → (C → B → C → C) → Tree A
 fold-Tree leaf-func _ (leaf x) = leaf-func x
 fold-Tree leaf-func node-func (node left-child y right-child) =
   node-func (fold-Tree leaf-func node-func left-child) y (fold-Tree leaf-func node-func right-child)
+
+-- Exercise map-is-fold-Tree (practice)
+
+map-is-fold-Tree-app : ∀ {A B C D : Set}
+  → (f : A → C) → (g : B → D) → (t : Tree A B)
+  → map-Tree f g t ≡ fold-Tree (λ x → leaf (f x)) (λ l y r → (node l (g y) r)) t
+map-is-fold-Tree-app f g (leaf x) = refl
+map-is-fold-Tree-app f g (node l y r)
+  rewrite map-is-fold-Tree-app f g l | map-is-fold-Tree-app f g r = refl
+
+map-is-fold-Tree : ∀ {A B C D : Set}
+  → (f : A → C) → (g : B → D)
+  → map-Tree f g ≡ fold-Tree (λ x → leaf (f x)) (λ l y r → (node l (g y) r))
+map-is-fold-Tree f g = extensionality (map-is-fold-Tree-app f g)
