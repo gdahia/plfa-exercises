@@ -6,12 +6,13 @@ open Eq.≡-Reasoning
 open import Data.Bool using (Bool; true; false; T; _∧_; _∨_; not)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_; _≤_; s≤s; z≤n)
 open import Data.Nat.Properties using
-  (+-assoc; +-identityˡ; +-identityʳ; *-assoc; *-identityˡ; *-identityʳ)
+  (+-assoc; +-identityˡ; +-identityʳ; *-assoc; *-identityˡ; *-identityʳ; *-comm)
 open import Relation.Nullary using (¬_; Dec; yes; no)
 open import Data.Product using (_×_; ∃; ∃-syntax) renaming (_,_ to ⟨_,_⟩)
 open import Function using (_∘_)
 open import Level using (Level)
 open import plfa.part1.Connectives using (extensionality)
+open import plfa.part1.Induction using (*-distrib-+)
 open import plfa.part1.Isomorphism using (_≃_; _⇔_)
 
 -- Lists
@@ -523,3 +524,36 @@ map-is-fold-Tree : ∀ {A B C D : Set}
   → (f : A → C) → (g : B → D)
   → map-Tree f g ≡ fold-Tree (λ x → leaf (f x)) (λ l y r → (node l (g y) r))
 map-is-fold-Tree f g = extensionality (map-is-fold-Tree-app f g)
+
+-- Exercise sum-downFrom (stretch)
+
+downFrom : ℕ → List ℕ
+downFrom zero     =  []
+downFrom (suc n)  =  n ∷ downFrom n
+
+_ : downFrom 3 ≡ [ 2 , 1 , 0 ]
+_ = refl
+
+sum-downFrom : ∀ (n : ℕ) →  sum (downFrom n) * 2 ≡ n * (n ∸ 1)
+sum-downFrom 0 = refl
+sum-downFrom 1 = refl
+sum-downFrom (suc (suc n)) =
+  begin
+    sum (downFrom (suc (suc n))) * 2
+  ≡⟨⟩
+    sum ((suc n) ∷ downFrom (suc n)) * 2
+  ≡⟨⟩
+    (suc n + (sum (downFrom (suc n)))) * 2
+  ≡⟨ *-distrib-+ (suc n) (sum (downFrom (suc n))) 2 ⟩
+    (suc n) * 2 + (sum (downFrom (suc n))) * 2
+  ≡⟨ cong (((suc n) * 2) +_) (sum-downFrom (suc n)) ⟩
+    (suc n) * 2 + (suc n) * ((suc n) ∸ 1)
+  ≡⟨⟩
+    (suc n) * 2 + (suc n) * n
+  ≡⟨ cong (_+ ((suc n) * n)) (*-comm (suc n) 2) ⟩
+    2 * (suc n) + (suc n) * n
+  ≡⟨ cong ((2 * (suc n)) +_) (*-comm (suc n) n) ⟩
+    2 * (suc n) + n * (suc n)
+  ≡⟨ sym (*-distrib-+ 2 n (suc n)) ⟩
+    (2 + n) * (suc n)
+  ∎
