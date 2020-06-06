@@ -633,3 +633,36 @@ foldr-monoid-++ _⊗_ e monoid-⊗ xs ys =
 foldl : ∀ {A B : Set} → (B → A → B) → B → List A → B
 foldl _⊗_ e []        =  e
 foldl _⊗_ e (x ∷ xs)  =  foldl _⊗_ (e ⊗ x) xs
+
+-- Exercise foldr-monoid-foldl (practice)
+
+foldl-monoid : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e →
+  ∀ (xs : List A) (y : A) → y ⊗ foldl _⊗_ e xs ≡ foldl _⊗_ y xs
+foldl-monoid _⊗_ e ⊗-monoid [] y = (identityʳ ⊗-monoid) y
+foldl-monoid _⊗_ e ⊗-monoid (x ∷ xs) y
+  rewrite (identityˡ ⊗-monoid) x
+    | sym (foldl-monoid _⊗_ e ⊗-monoid xs x)
+    | sym ((assoc ⊗-monoid) y x (foldl _⊗_ e xs))
+      = foldl-monoid _⊗_ e ⊗-monoid xs (y ⊗ x)
+
+foldr-monoid-foldl-app : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e
+  → (xs : List A) → foldr _⊗_ e xs ≡ foldl _⊗_ e xs
+foldr-monoid-foldl-app _⊗_ e _ [] = refl
+foldr-monoid-foldl-app _⊗_ e ⊗-monoid (x ∷ xs) =
+  begin
+    foldr _⊗_ e (x ∷ xs)
+  ≡⟨⟩
+    x ⊗ foldr _⊗_ e xs
+  ≡⟨ cong (x ⊗_) (foldr-monoid-foldl-app _⊗_ e ⊗-monoid xs) ⟩
+    x ⊗ foldl _⊗_ e xs
+  ≡⟨ cong (_⊗ foldl _⊗_ e xs) (sym ((identityˡ ⊗-monoid) x)) ⟩
+    (e ⊗ x) ⊗ foldl _⊗_ e xs
+  ≡⟨ foldl-monoid _⊗_ e ⊗-monoid xs (e ⊗ x) ⟩
+    foldl _⊗_ (e ⊗ x) xs
+  ≡⟨⟩
+    foldl _⊗_ e (x ∷ xs)
+  ∎
+
+foldr-monoid-foldl : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e
+  → foldr _⊗_ e ≡ foldl _⊗_ e
+foldr-monoid-foldl _⊗_ e ⊗-monoid = extensionality (foldr-monoid-foldl-app _⊗_ e ⊗-monoid)
