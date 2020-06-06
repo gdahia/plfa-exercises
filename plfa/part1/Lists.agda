@@ -557,3 +557,79 @@ sum-downFrom (suc (suc n)) =
   ≡⟨ sym (*-distrib-+ 2 n (suc n)) ⟩
     (2 + n) * (suc n)
   ∎
+
+-- Monoids
+
+record IsMonoid {A : Set} (_⊗_ : A → A → A) (e : A) : Set where
+  field
+    assoc : ∀ (x y z : A) → (x ⊗ y) ⊗ z ≡ x ⊗ (y ⊗ z)
+    identityˡ : ∀ (x : A) → e ⊗ x ≡ x
+    identityʳ : ∀ (x : A) → x ⊗ e ≡ x
+
+open IsMonoid
+
++-monoid : IsMonoid _+_ 0
++-monoid =
+  record
+    { assoc = +-assoc
+    ; identityˡ = +-identityˡ
+    ; identityʳ = +-identityʳ
+    }
+
+*-monoid : IsMonoid _*_ 1
+*-monoid =
+  record
+    { assoc = *-assoc
+    ; identityˡ = *-identityˡ
+    ; identityʳ = *-identityʳ
+    }
+
+++-monoid : ∀ {A : Set} → IsMonoid {List A} _++_ []
+++-monoid =
+  record
+    { assoc = ++-assoc
+    ; identityˡ = ++-identityˡ
+    ; identityʳ = ++-identityʳ
+    }
+
+foldr-monoid : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e →
+  ∀ (xs : List A) (y : A) → foldr _⊗_ y xs ≡ foldr _⊗_ e xs ⊗ y
+foldr-monoid _⊗_ e ⊗-monoid [] y =
+  begin
+    foldr _⊗_ y []
+  ≡⟨⟩
+    y
+  ≡⟨ sym (identityˡ ⊗-monoid y) ⟩
+    (e ⊗ y)
+  ≡⟨⟩
+    foldr _⊗_ e [] ⊗ y
+  ∎
+foldr-monoid _⊗_ e ⊗-monoid (x ∷ xs) y =
+  begin
+    foldr _⊗_ y (x ∷ xs)
+  ≡⟨⟩
+    x ⊗ (foldr _⊗_ y xs)
+  ≡⟨ cong (x ⊗_) (foldr-monoid _⊗_ e ⊗-monoid xs y) ⟩
+    x ⊗ (foldr _⊗_ e xs ⊗ y)
+  ≡⟨ sym (assoc ⊗-monoid x (foldr _⊗_ e xs) y) ⟩
+    (x ⊗ foldr _⊗_ e xs) ⊗ y
+  ≡⟨⟩
+    foldr _⊗_ e (x ∷ xs) ⊗ y
+  ∎
+
+foldr-monoid-++ : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e →
+  ∀ (xs ys : List A) → foldr _⊗_ e (xs ++ ys) ≡ foldr _⊗_ e xs ⊗ foldr _⊗_ e ys
+foldr-monoid-++ _⊗_ e monoid-⊗ xs ys =
+  begin
+    foldr _⊗_ e (xs ++ ys)
+  ≡⟨ foldr-++ _⊗_ e xs ys ⟩
+    foldr _⊗_ (foldr _⊗_ e ys) xs
+  ≡⟨ foldr-monoid _⊗_ e monoid-⊗ xs (foldr _⊗_ e ys) ⟩
+    foldr _⊗_ e xs ⊗ foldr _⊗_ e ys
+  ∎
+
+-- Exercise foldl (practice)
+
+foldl : ∀ {A B : Set} → (B → A → B) → B → List A → B
+foldl _⊗_ e []        =  e
+foldl _⊗_ e (x ∷ xs)  =  foldl _⊗_ (e ⊗ x) xs
