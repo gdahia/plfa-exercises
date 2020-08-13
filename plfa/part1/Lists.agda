@@ -755,3 +755,38 @@ Any-++-⇔ xs ys =
 ∈-++-⇔ : ∀ {A : Set} (x : A) (xs ys : List A) →
   (x ∈ (xs ++ ys)) ⇔ ((x ∈ xs) ⊎ (x ∈ ys))
 ∈-++-⇔ x xs ys = Any-++-⇔ xs ys
+
+-- Exercise All-++-≃ (stretch)
+
+All-++-≃ : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+  All P (xs ++ ys) ≃ (All P xs × All P ys)
+All-++-≃ xs ys =
+  record
+    { to = to xs ys
+    ; from = from xs ys
+    ; from∘to = from∘to xs ys
+    ; to∘from = to∘from xs ys
+    }
+  where
+
+  to : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+    All P (xs ++ ys) → (All P xs × All P ys)
+  to [] ys Pys = ⟨ [] , Pys ⟩
+  to (x ∷ xs) ys (Px ∷ Pxs++ys) with to xs ys Pxs++ys
+  ... | ⟨ Pxs , Pys ⟩ = ⟨ Px ∷ Pxs , Pys ⟩
+
+  from : ∀ { A : Set} {P : A → Set} (xs ys : List A) →
+    All P xs × All P ys → All P (xs ++ ys)
+  from [] ys ⟨ [] , Pys ⟩ = Pys
+  from (x ∷ xs) ys ⟨ Px ∷ Pxs , Pys ⟩ =  Px ∷ from xs ys ⟨ Pxs , Pys ⟩
+
+  from∘to : ∀ {A : Set} {P : A → Set} (xs ys : List A) (all-p-xs-++-ys : (All P (xs ++ ys))) →
+    (from xs ys) (to xs ys all-p-xs-++-ys) ≡ all-p-xs-++-ys
+  from∘to [] ys Pys = refl
+  from∘to (x ∷ xs) ys (Px ∷ Pxs++ys) = cong (Px ∷_) (from∘to xs ys Pxs++ys)
+
+  to∘from : ∀ {A : Set} {P : A → Set} (xs ys : List A)
+    (all-p-xs-and-all-p-ys : (All P xs × All P ys)) →
+    (to xs ys) (from xs ys all-p-xs-and-all-p-ys) ≡ all-p-xs-and-all-p-ys
+  to∘from [] ys ⟨ [] , Pys ⟩ = refl
+  to∘from (x ∷ xs) ys ⟨ Px ∷ Pxs , Pys ⟩ rewrite to∘from xs ys ⟨ Pxs , Pys ⟩ = refl
