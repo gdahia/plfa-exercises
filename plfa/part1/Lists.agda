@@ -790,3 +790,26 @@ All-++-≃ xs ys =
     (to xs ys) (from xs ys all-p-xs-and-all-p-ys) ≡ all-p-xs-and-all-p-ys
   to∘from [] ys ⟨ [] , Pys ⟩ = refl
   to∘from (x ∷ xs) ys ⟨ Px ∷ Pxs , Pys ⟩ rewrite to∘from xs ys ⟨ Pxs , Pys ⟩ = refl
+
+-- Exercise ¬Any⇔All¬ (recommended)
+
+¬Any⇔All¬ : ∀ {A : Set} {P : A → Set} (xs : List A) →
+  (¬_ ∘ Any P) xs ⇔ All (¬_ ∘ P) xs
+¬Any⇔All¬ xs =
+  record
+    { to = to xs
+    ; from = from xs
+    }
+  where
+
+  to : ∀ {A : Set} {P : A → Set} (xs : List A) →
+    (¬_ ∘ Any P) xs → All (¬_ ∘ P) xs
+  to [] _ = []
+  to (x ∷ xs) ¬∘Any-P-xs = (λ{ Px → ¬∘Any-P-xs (here Px) }) ∷ (to xs ¬∘Any-P-xs)
+  -- we need to convert the "(¬_ ∘ Any P) (x ∷ xs)" into "(¬_ ∘ Any P) xs"
+
+  from : ∀ {A : Set} {P : A → Set} {xs : List A} →
+    All (¬_ ∘ P) xs → (¬_ ∘ Any P) xs
+  -- from [] = λ{ Any-Px → () }
+  from (¬Px ∷ _) (here Px) = ¬Px Px
+  from (_ ∷ All-¬P-xs) (there Any-P-xs) = (from All-¬P-xs) Any-P-xs
