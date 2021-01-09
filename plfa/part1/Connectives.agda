@@ -299,6 +299,6 @@ currying =
 ⊎×-implies-×⊎ (inj₁ ⟨ x , y ⟩) = ⟨ (inj₁ x) , (inj₁ y) ⟩
 ⊎×-implies-×⊎ (inj₂ ⟨ z , α ⟩) = ⟨ (inj₂ z) , (inj₂ α) ⟩
 
--- The converse doesn't hold because we can have B = D = ⊥. This would give us
--- (A ⊎ C) × (⊥ ⊎ ⊥) → (A × ⊥) ⊎ (C × ⊥), and the lhs of the implication is not
+-- The converse doesn't hold because we can have B = C = ⊥. This would give us
+-- (A ⊎ ⊥) × (⊥ ⊎ D) → (A × ⊥) ⊎ (⊥ × D), and the lhs of the implication is not
 -- empty, whereas the rhs is.
